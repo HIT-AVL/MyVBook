@@ -20,7 +20,7 @@ define('DIR_WRITE_MODE', 0777);
 define( "WB_AKEY" , '3393558983' );
 define( "WB_SKEY" , '2f13c96c347fd82bcf33843f775c8e3e' );
 define( "WB_CALLBACK_URL" , "http://localhost/mytest/index.php/weibo/callback" );
-
+define("MY_DIR","http://localhost/mytest/");
 /*
 |--------------------------------------------------------------------------
 | File Stream Modes

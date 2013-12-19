@@ -1,6 +1,10 @@
 ﻿<?php
 class vmodel extends CI_Model{
-	
+	var $tittle;
+	var $uname;
+    var $curp;
+    var $curi;
+	var $catalog=array();
 	function con($i,$pic,$ms,$uid)
 	{
 		//echo $i;
@@ -12,53 +16,9 @@ class vmodel extends CI_Model{
 			$this->convertopdf1(APPPATH.$pics[$pic],$ms,$uid);
 		else if($i == 2)
 			$this->convertopdf2(APPPATH.$pics[$pic],$ms,$uid);
+		else if($i == 3)
+			$this->convertopdf3(APPPATH.$pics[$pic],$ms,$uid);
 			
-	}
-		function entocht($st)
-	{
-		$tm=explode(" ",$st);
-		$week ="";
-		$mon="";
-		if($tm[0]=="Mon")
-			$week="星期一";
-		else if($tm[0]=="Tue")
-			$week="星期二";
-		else if($tm[0]=="Wed")
-			$week="星期三";
-		else if($tm[0]=="Thu")
-			$week="星期四";
-		else if($tm[0]=="Fri")
-			$week="星期五";
-		else if($tm[0]=="Sat")
-			$week="星期六";
-		else if($tm[0]=="Sun")
-			$week="星期日";
-		if($tm[1]=="Jan")
-			$mon="1月";
-		else if($tm[1]=="Feb")
-			$mon="2月";
-		else if($tm[1]=="Mar")
-			$mon="3月";
-		else if($tm[1]=="Apr")
-			$mon="4月";
-		else if($tm[1]=="May")
-			$mon="5月";
-		else if($tm[1]=="Jun")
-			$mon="6月";
-		else if($tm[1]=="Jul")
-			$mon="7月";
-		else if($tm[1]=="Aug")
-			$mon="8月";
-		else if($tm[1]=="Sep")
-			$mon="9月";
-		else if($tm[1]=="Oct")
-			$mon="10月";
-		else if($tm[1]=="Nov")
-			$mon="11月";
-		else if($tm[1]=="Dec")
-			$mon="12月";
-		return $tm[5]."年 ".$mon." ".$tm[2]."日 ".$week." ".$tm[3];
-		
 	}
 	function convertopdf($back,$ms,$uid)
 	{
@@ -86,10 +46,21 @@ class vmodel extends CI_Model{
 		$len=count($ms);
 		$pg=$len/6;
 		$i=0;
-		
-		for($p=0;$i<$len;$p++)
+		$pi=0;
+		$ai=0;
+		$ifpage=false;
+		$pdf->AddPage();
+		$pdf->SetFooterMargin(0);
+		$pdf->SetTextColor(0, 63, 127);
+		$pdf->Image($back,0,0,210,298);
+		$html = $this->getcover("myvbook","limuhit");
+		$pdf->writeHTML($html, true, false, true, false, '');
+		$pdf->startPageGroup();
+        $i=$len-1;
+		for($p=0;$i>=0;$p++)
 		{
-			$fin = fopen("{$p}.html","w");
+            //$fin = fopen("{$p}.html","w");
+			$ifpage=false;
 			$html= 
 <<<EOF
 <html>
@@ -100,12 +71,15 @@ class vmodel extends CI_Model{
 <body>
 <table border="2" cellpadding="20" cellspacing="0" align="left">
 EOF;
-			for($ll=0;$ll <78&&$i<$len;$i++ )
+			for($ll=0;$ll <78&&$i>=0;$i-- )
 			{
 				$item=$ms[$i];
-				$time=$this->entocht($item->time);
+				$time=$item->time;
+				
 				if($item->used)
 				{
+					$ifpage=true;
+					$this->catalog[$ai]=array("time"=>$item->ttime,"page"=>($pi+1));
 					$html.="<tr>
 					<td align=\"center\" width =\"540\" height =\"30\"  font style=\"font-size:40px;font-weight:bold;color:#003366;}\">{$time}</td ></tr>";
 					if($item->img!="")
@@ -121,25 +95,312 @@ EOF;
 					{
 						$html.="<tr>
 						
-						<td align=\"center\" width =\"540\" font style=\"font-size:30px;font-weight:bold;color:#666666;}\">{$item->text}</td>
+						<td align=\"left\" width =\"540\" font style=\"font-size:30px;font-weight:bold;color:#666666;}\">{$item->text}</td>
 						</tr>
 						";
 						$ll+=20;
 					}
+					$ai++;
 				}
+				
+			}
+			$pi++;
+			$html.='</table>';
+			$html.='</body>';
+			$html.='</html>';
+			if($ifpage)
+			{
+				$pdf->AddPage();
+				$pdf->SetFooterMargin(5);
+				$pdf->SetTextColor(0, 63, 127);
+				$pdf->Image($back,0,0,210,298);
+                $pdf->writeHTML($html, true, false, true, false, '');
+			}
+            //fwrite($fin,$html);
+            //fclose($fin);
+		}
+        
+         $cat=$this->getcat();
+    	 $llt=count($cat);
+        $st=2;
+        for($i=0;$i<$llt;)
+        {
+                $html= 
+<<<EOF
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charxset=utf-8" />
+<title>好友列表显示</title>
+</head>
+<body>
+<table border="2" cellpadding="20" cellspacing="0" align="left">
+EOF;
+         	$j=0;
+			for(;$i<$llt,$j<11;$i++,$j++)
+			{
+				$html.=$cat[$i];
 			}
 			$html.='</table>';
 			$html.='</body>';
 			$html.='</html>';
-			$pdf->AddPage();
+      		$pdf->AddPage();
+	 		$pdf->SetFooterMargin(0);
 			$pdf->SetTextColor(0, 63, 127);
 			$pdf->Image($back,0,0,210,298);
 			$pdf->writeHTML($html, true, false, true, false, '');
-			fwrite($fin,$html);
-			fclose($fin);
-		}
+            $pdf->movePage($pi+2, $st);
+            $st++;
+            $pi++;
+        }
+        //  print_r($cat);
+        // die();
+        //print_r($cat);
+        // $cct=$this->getcat();
+        //  print_r($cct);
+        //die();
 		$pdf->lastPage();
-		$pdf->Output($uid.'_0.pdf', 'F');
+		$mypdf=$pdf->Output($uid.'_0.pdf', 'S');
+        $s = new SaeStorage();
+        $s->write('stmyvbook',$uid.'_0.pdf',$mypdf);
+		
+		
+	}
+    function creatcat()
+    {
+        $cat=array();
+        
+        foreach($this->catalog as $it)
+        {       
+            $tm1=$it['time']['year']."年".$it['time']['mon']."月";
+           	$tm2=$it["time"]["mon"]."月".$it["time"]["day"]."日";
+            if(!isset($cat[$tm1]))
+            {
+                
+                $cat[$tm1]=array();
+                $cat[$tm1]['name']=$tm1;
+            }
+     	 	if(!isset($cat[$tm1][$tm2]))
+            {
+                $cat[$tm1][$tm2]['pg']=$it["page"];
+                $cat[$tm1][$tm2]['str']=$tm2;
+            }
+        }
+        return $cat;
+    }
+    function getcat()
+    {
+      $cat=$this->creatcat();  
+	  $cct=array();
+      $i=0;
+      $j=1;
+         foreach($cat as $ab)
+	 {
+          $cct[$i]="<tr><td><font size = \"24\" >."."第".$j."章"."		".$ab['name']."</font></td></tr>";
+          $i++;
+          $j++;
+          //<a href="#3">go to page 3</a>
+          foreach($ab as $item)
+          {
+            if($item["str"]=="2")
+                continue;
+              $html="<tr><td><a href=\"#".floor($item["pg"]+1+$i/11)."\"><font size = \"16\" >.".$item["str"];
+			$html.="\t……………………………………………………";
+			$html.=$item["pg"];
+              $html.="</font></a></td></tr>";
+            $cct[$i]=$html;
+              //     echo $html;
+            $i++;
+          }
+      }
+        //die();
+        return $cct;
+    }
+	function getcover()
+	{
+		
+		$html=" 
+<html>
+<body>
+<table>
+<tr><td height = \"50\" ></td></tr>
+<tr><td height = \"50\"></td></tr>
+<tr><td height = \"50\"></td></tr>
+<tr><td height = \"50\"></td></tr>
+<tr><td height = \"90\"></td></tr>
+<tr><td height = \"90\" width =\"440\" align =\"center\" ><font size = \"36\" >";
+$html.=$this->tittle;
+$html.="</font></td><td height = \"100\" width =\"120\"></td></tr>
+<tr><td height = \"90\"></td></tr>
+<tr><td height = \"90\"></td></tr>
+<tr><td height = \"90\" width =\"160\" ></td><td height = \"90\" width =\"210\"align =\"right\"><font size = \"24\">";
+$html.=$this->uname;
+$html.="</font></td><td height = \"80\" width =\"180\"></td></tr>
+<tr><td height = \"90\"></td></tr>
+<tr><td height = \"90\" width =\"180\" ></td><td height = \"90\" width =\"180\"></td><td height = \"170\" width =\"180\"align =\"right\"><font size = \"24\">";
+$html.=date('Y-m-d',time());
+$html.="</font></td></tr>
+<tr><td height = \"50\"><td></tr>
+</table>
+</body>
+</html>";
+	return $html;
+	}
+	function convertopdf3($back,$ms,$uid)
+	{
+		require_once(APPPATH.'/libraries/tcpdf/config/lang/chi.php');
+		require_once(APPPATH.'/libraries/tcpdf/tcpdf.php');
+		$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+		$pdf->SetCreator(PDF_CREATOR);
+		$pdf->SetAuthor('Nicola Asuni');
+		$pdf->SetTitle('中文');
+		$pdf->SetSubject('TCPDF Tutorial');
+		$pdf->SetKeywords('TCPDF, PDF, example, test, guide');
+		$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+		$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+		$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+		$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+		
+		$pdf->SetHeaderMargin(0);
+		$pdf->SetFooterMargin(5);
+		$pdf->SetAutoPageBreak(FALSE, PDF_MARGIN_BOTTOM);
+		$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+		$pdf->setLanguageArray($l);
+		$pdf->setFontSubsetting(true);
+		$pdf->SetFont('droidsansfallback', '', 12);
+		//$this->user=unserialize($_SESSION["User"]);
+		//$ms=$this->user->ms;
+		$len=count($ms);
+		$pg=$len/6;
+		$i=0;
+        $pi=0;
+		$ai=0;
+		$pdf->AddPage();
+		$pdf->SetFooterMargin(0);
+		$pdf->SetTextColor(0, 63, 127);
+		$pdf->Image($back,0,0,210,298);
+		$html = $this->getcover("myvbook","limuhit");
+		$pdf->writeHTML($html, true, false, true, false, '');
+		$pdf->startPageGroup();
+        $i=$len-1;
+		for($p=0;$i>=0;$p++)
+		{
+            //$fin = fopen("{$p}.html","w");
+			$html= 
+<<<EOF
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charxset=utf-8" />
+<title>好友列表显示</title>
+</head>
+<body>
+<table border="2" cellpadding="20" cellspacing="0" align="left">
+EOF;
+			for($ll=0;$ll <64&&$i>=0;$i-- )
+			{
+				$item=$ms[$i];
+				$time=$item->time;
+				if($item->used)
+				{
+                    $llmt=0;
+                    if(count($item->comments)>0)
+					{
+					
+                      for($ij=0;$ij<$item->ci;$ij++)
+						{
+							$itm=$item->comments[$ij];
+                 		    $llmt+=2*ceil((strlen($itm->text)+18)/49);
+						}
+						
+					}
+                    if($ll+$llmt>64&&$ll>0)
+                    {
+                           goto endt;
+                    }
+                    $this->catalog[$ai]=array("time"=>$item->ttime,"page"=>($pi+1));
+                    $ai++;
+					$html.="<tr>
+					<td align=\"center\" width =\"540\" height =\"30\"  font style=\"font-size:40px;font-weight:bold;color:#003366;}\">{$time}</td ></tr>";
+					if($item->img!="")
+					{
+						$html.="<tr>
+						<td width =\"180\"  ><img src=\"{$item->img}\"  height=\"125\" /></td>
+						<td width =\"360\"font style=\" font-size:30px;font-weight:bold;color:#666666;}\">{$item->text}</td>
+						
+						</tr>";
+						$ll+=20;
+					}
+					else
+					{
+						$html.="<tr>
+						
+						<td align=\"left\" width =\"540\" font style=\"font-size:30px;font-weight:bold;color:#666666;}\">{$item->text}</td>
+						</tr>
+						";
+						$ll+=20;
+					}
+				
+					if(count($item->comments)>0)
+					{
+						$html.="<tr><td align=\"left\" width =\"540\" font style=\"font-size:30px;font-weight:bold;color:#666666;}\">";
+						$html.="评论:<br>";
+						for($ij=0;$ij<$item->ci;$ij++)
+						{
+							$itm=$item->comments[$ij];
+							$html=$html.$itm->cname.":".$itm->text."	(".$itm->time.")<br>";
+                        	$ll+=2*ceil((strlen($itm->text)+18)/49);
+						}
+						$html.="</td></tr>";
+					}
+               }
+			}
+            endt:         $pi++;
+			$html.='</table>';
+			$html.='</body>';
+			$html.='</html>';
+			$pdf->AddPage();
+			$pdf->SetFooterMargin(5);
+			$pdf->SetTextColor(0, 63, 127);
+			$pdf->Image($back,0,0,210,298);
+            $pdf->writeHTML($html, true, false, true, false, '');
+            //fwrite($fin,$html);
+            //fclose($fin);
+		}
+         $cat=$this->getcat();
+    	 $llt=count($cat);
+        $st=2;
+        for($i=0;$i<$llt;)
+        {
+                $html= 
+<<<EOF
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charxset=utf-8" />
+<title>好友列表显示</title>
+</head>
+<body>
+<table border="2" cellpadding="20" cellspacing="0" align="left">
+EOF;
+         	$j=0;
+			for(;$i<$llt,$j<11;$i++,$j++)
+			{
+				$html.=$cat[$i];
+			}
+			$html.='</table>';
+			$html.='</body>';
+			$html.='</html>';
+      		$pdf->AddPage();
+	 		$pdf->SetFooterMargin(0);
+			$pdf->SetTextColor(0, 63, 127);
+			$pdf->Image($back,0,0,210,298);
+			$pdf->writeHTML($html, true, false, true, false, '');
+            $pdf->movePage($pi+2, $st);
+            $st++;
+            $pi++;
+        }
+		$pdf->lastPage();
+		$mypdf=$pdf->Output($uid.'_3.pdf', 'S');
+        $s = new SaeStorage();
+        $s->write('stmyvbook',$uid.'_3.pdf',$mypdf);
 
 		
 		
@@ -170,10 +431,20 @@ EOF;
 		$len=count($ms);
 		$pg=$len/6;
 		$i=0;
+        $pi=0;
+		$ai=0;
+		$pdf->AddPage();
+		$pdf->SetFooterMargin(0);
+		$pdf->SetTextColor(0, 63, 127);
+		$pdf->Image($back,0,0,210,298);
+		$html = $this->getcover("myvbook","limuhit");
+		$pdf->writeHTML($html, true, false, true, false, '');
+		$pdf->startPageGroup();
 		$time="";
-		for($p=0;$i<$len;$p++)
+        $i=$len-1;
+		for($p=0;$i>=0;$p++)
 		{
-			$fin = fopen("{$p}.html","w");
+            //$fin = fopen("{$p}.html","w");
 			$html= 
 <<<EOF
 <html>
@@ -184,12 +455,23 @@ EOF;
 <body>
 <table border="2" cellpadding="20" cellspacing="0" align="left">
 EOF;
-			for($ll=0;$ll <9&&$i<$len;$i++ )
+			for($ll=0;$ll <9;$i-- )
 			{
-				$item=$ms[$i];
+                if($i>=0)
+					$item=$ms[$i];
+  				else
+                {
+					$item=$ms[$len];
+                    $item->used=true;
+                }
 				if($item->used)
 				{
-					$time=$this->entocht($item->time);
+					$time=$item->time;
+                    if($i>=0)
+                    {
+                    	$this->catalog[$ai]=array("time"=>$item->ttime,"page"=>($pi+1));
+                    	$ai++;
+                    }
 					if($ll%3==0)
 						$html.="<tr>";
 					
@@ -216,15 +498,50 @@ EOF;
 			$html.='</table>';
 			$html.='</body>';
 			$html.='</html>';
+            $pi++;
 			$pdf->AddPage();
 			$pdf->SetTextColor(0, 63, 127);
 			$pdf->Image($back,0,0,210,298);
 			$pdf->writeHTML($html, true, false, true, false, '');
-			fwrite($fin,$html);
-			fclose($fin);
+            //fwrite($fin,$html);
+            //fclose($fin);
 		}
+        $cat=$this->getcat();
+    	 $llt=count($cat);
+        $st=2;
+        for($i=0;$i<$llt;)
+        {
+                $html= 
+<<<EOF
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charxset=utf-8" />
+<title>好友列表显示</title>
+</head>
+<body>
+<table border="2" cellpadding="20" cellspacing="0" align="left">
+EOF;
+         	$j=0;
+			for(;$i<$llt,$j<11;$i++,$j++)
+			{
+				$html.=$cat[$i];
+			}
+			$html.='</table>';
+			$html.='</body>';
+			$html.='</html>';
+      		$pdf->AddPage();
+	 		$pdf->SetFooterMargin(0);
+			$pdf->SetTextColor(0, 63, 127);
+			$pdf->Image($back,0,0,210,298);
+			$pdf->writeHTML($html, true, false, true, false, '');
+            $pdf->movePage($pi+2, $st);
+            $st++;
+            $pi++;
+        }
 		$pdf->lastPage();
-		$pdf->Output($this->user->uid.'_1.pdf', 'F');
+		$mypdf=$pdf->Output($uid.'_1.pdf', 'S');
+        $s = new SaeStorage();
+        $s->write('stmyvbook',$uid.'_1.pdf',$mypdf);
 
 		//$data['name']=$this->user->uid.'.pdf';
 		//$this->load->view('download',$data);
@@ -256,10 +573,19 @@ EOF;
 		$len=count($ms);
 		$pg=$len/6;
 		$i=0;
-		
-		for($p=0;$i<$len;$p++)
+        $pi=0;
+		$ai=0;
+		$pdf->AddPage();
+		$pdf->SetFooterMargin(0);
+		$pdf->SetTextColor(0, 63, 127);
+		$pdf->Image($back,0,0,210,298);
+		$html = $this->getcover("myvbook","limuhit");
+		$pdf->writeHTML($html, true, false, true, false, '');
+		$pdf->startPageGroup();
+        $i=$len-1;
+		for($p=0;$i>=0;$p++)
 		{
-			$fin = fopen("{$p}.html","w");
+            //$fin = fopen("{$p}.html","w");
 			$html= 
 <<<EOF
 <html>
@@ -270,12 +596,14 @@ EOF;
 <body>
 <table border="2" cellpadding="20" cellspacing="0" align="left">
 EOF;
-			for($ll=0;$ll <78&&$i<$len;$i++ )
+			for($ll=0;$ll <78&&$i>=0;$i-- )
 			{
 				$item=$ms[$i];
-				$time=$this->entocht($item->time);
+				$time=$item->time;
 				if($item->used)
 				{
+                    $this->catalog[$ai]=array("time"=>$item->ttime,"page"=>($pi+1));
+                    $ai++;
 					$html.="";
 					if($i%2==1)
 						$html.="<tr>
@@ -321,14 +649,49 @@ EOF;
 			$html.='</body>';
 			$html.='</html>';
 			$pdf->AddPage();
+            $pi++;
 			$pdf->SetTextColor(0, 63, 127);
 			$pdf->Image($back,0,0,210,298);
 			$pdf->writeHTML($html, true, false, true, false, '');
-			fwrite($fin,$html);
-			fclose($fin);
+            //fwrite($fin,$html);
+            //fclose($fin);
 		}
+        $cat=$this->getcat();
+    	 $llt=count($cat);
+        $st=2;
+        for($i=0;$i<$llt;)
+        {
+                $html= 
+<<<EOF
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charxset=utf-8" />
+<title>好友列表显示</title>
+</head>
+<body>
+<table border="2" cellpadding="20" cellspacing="0" align="left">
+EOF;
+         	$j=0;
+			for(;$i<$llt,$j<11;$i++,$j++)
+			{
+				$html.=$cat[$i];
+			}
+			$html.='</table>';
+			$html.='</body>';
+			$html.='</html>';
+      		$pdf->AddPage();
+	 		$pdf->SetFooterMargin(0);
+			$pdf->SetTextColor(0, 63, 127);
+			$pdf->Image($back,0,0,210,298);
+			$pdf->writeHTML($html, true, false, true, false, '');
+            $pdf->movePage($pi+2, $st);
+            $st++;
+            $pi++;
+        }
 		$pdf->lastPage();
-		$pdf->Output($this->user->uid.'_2.pdf', 'F');
+		$mypdf=$pdf->Output($uid.'_2.pdf', 'S');
+        $s = new SaeStorage();
+        $s->write('stmyvbook',$uid.'_2.pdf',$mypdf);
 		//$data['name']=$this->user->uid.'.pdf';
 		//$this->load->view('download',$data);
 	}

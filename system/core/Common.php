@@ -1,4 +1,4 @@
-<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+﻿<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 /**
  * CodeIgniter
  *
@@ -26,6 +26,126 @@
  * @author		ExpressionEngine Dev Team
  * @link		http://codeigniter.com/user_guide/
  */
+ if ( ! function_exists('findweeknum'))
+{
+	function  findweeknum($str)
+	{
+		$p=strtotime($str)-946767600;
+		$t=floor($p/(3600*24*7));
+		return $t;
+	}
+	
+}
+if(!function_exists('weekday'))
+{
+	function weekday($str)
+	{
+		$tm=explode(" ",$st);
+		$week =0;
+		if($tm[0]=="Mon")
+			$week=1;
+		else if($tm[0]=="Tue")
+			$week=2;
+		else if($tm[0]=="Wed")
+			$week=3;
+		else if($tm[0]=="Thu")
+			$week=4;
+		else if($tm[0]=="Fri")
+			$week=5;
+		else if($tm[0]=="Sat")
+			$week=6;
+		else if($tm[0]=="Sun")
+			$week=7;
+		return $week;
+	}
+}
+if ( ! function_exists('entomyt'))
+{
+	function entomyt($st)
+	{
+		$tm=explode(" ",$st);
+		$mon="";
+		$ans=array();
+		if($tm[1]=="Jan")
+			$mon="01";
+		else if($tm[1]=="Feb")
+			$mon="02";
+		else if($tm[1]=="Mar")
+			$mon="03";
+		else if($tm[1]=="Apr")
+			$mon="04";
+		else if($tm[1]=="May")
+			$mon="05";
+		else if($tm[1]=="Jun")
+			$mon="06";
+		else if($tm[1]=="Jul")
+			$mon="07";
+		else if($tm[1]=="Aug")
+			$mon="08";
+		else if($tm[1]=="Sep")
+			$mon="09";
+		else if($tm[1]=="Oct")
+			$mon="10";
+		else if($tm[1]=="Nov")
+			$mon="11";
+		else if($tm[1]=="Dec")
+			$mon="12";
+		$ans["str"]=$tm[5]."-".$mon."-".$tm[2];
+		$ans["mon"]=intval($mon);
+		$ans["day"]=intval($tm[2]);
+		return $ans;
+		
+	}
+}
+if ( ! function_exists('entocht'))
+{
+	function entocht($st)
+	{
+		$tm=explode(" ",$st);
+		$week ="";
+		$mon="";
+		if($tm[0]=="Mon")
+			$week="星期一";
+		else if($tm[0]=="Tue")
+			$week="星期二";
+		else if($tm[0]=="Wed")
+			$week="星期三";
+		else if($tm[0]=="Thu")
+			$week="星期四";
+		else if($tm[0]=="Fri")
+			$week="星期五";
+		else if($tm[0]=="Sat")
+			$week="星期六";
+		else if($tm[0]=="Sun")
+			$week="星期日";
+		if($tm[1]=="Jan")
+			$mon="1月";
+		else if($tm[1]=="Feb")
+			$mon="2月";
+		else if($tm[1]=="Mar")
+			$mon="3月";
+		else if($tm[1]=="Apr")
+			$mon="4月";
+		else if($tm[1]=="May")
+			$mon="5月";
+		else if($tm[1]=="Jun")
+			$mon="6月";
+		else if($tm[1]=="Jul")
+			$mon="7月";
+		else if($tm[1]=="Aug")
+			$mon="8月";
+		else if($tm[1]=="Sep")
+			$mon="9月";
+		else if($tm[1]=="Oct")
+			$mon="10月";
+		else if($tm[1]=="Nov")
+			$mon="11月";
+		else if($tm[1]=="Dec")
+			$mon="12月";
+		return $tm[5]."年 ".$mon." ".$tm[2]."日 ".$week." ".$tm[3];
+		
+	}
+}
 
 // ------------------------------------------------------------------------
 

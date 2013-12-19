@@ -1,5 +1,4 @@
 ﻿<?php
-
 session_start();
 include_once( APPPATH.'/libraries/saetv2.ex.class.php' );
 
@@ -54,6 +53,8 @@ class Weibo extends CI_Controller {
 		$this->user->uid=$uid;
 		$this->user->begt= strtotime($_POST['begt']);
 		$this->user->endt= strtotime($_POST['endt']);
+		if(isset($_POST['com']))
+			$this->user->com = true;
 		if(isset($_POST['picture']))
 			$this->user->imgmask=1;
 		//user_timeline_by_id( $uid = NULL , $page = 1 , $count = 50 , $since_id = 0, $max_id = 0, $feature = 0, $trim_user = 0, $base_app = 0)
@@ -68,26 +69,38 @@ class Weibo extends CI_Controller {
 		}
 		$screen=$c->show_user_by_id($uid);
 		$this->user->screenname=$screen['screen_name'];
+
 		$storeuser=serialize($this->user);
 		$_SESSION["User"]=$storeuser;
-		//$data['pn']=$i;
-		//$data['screen_name']=$this->user->screenname;
-		//$data['message']=$this->user->ms;
-		//$data['len']=count($data['message']);
-		//$this->load->view('show');
 		$this->showpages(0);
 
 	}
+	function get_comments()
+	{
+		$this->user=unserialize($_SESSION["User"]);
+		$c = new SaeTClientV2( WB_AKEY , WB_SKEY , $_SESSION['token']['access_token'] );
+		$len = count($this->user->ms);
+		for($i=0;$i<$len;$i++)
+		{
+			$tmp = $this->user->ms[$i];
+			if($tmp->used)
+			{
+				$this->user->ms[$i]->ci=0;
+				$cm=$c->get_comments_by_sid($tmp->id);		
+				$this->user->ms[$i]->get_comments($cm);
+			}
+		}
+		
+	}
 	function showpages($i)
 	{
-	
+		
 		$this->user=unserialize($_SESSION["User"]);
 		$data['pn']=$i;
 		$data['screen_name']=$this->user->screenname;
 		$data['message']=$this->user->ms;
-		$data['len']=count($data['message']);
+		$data['len']=count($data['message'])-1;
 		$data['show']=$this->user->imgmask;
-		//echo $data['len'];
 		$f= false;
 		if($i>0)
 		{
@@ -114,76 +127,91 @@ class Weibo extends CI_Controller {
 		$storeuser=serialize($this->user);
 		$_SESSION["User"]=$storeuser;
 		if($f)
+		{
+			
+			if($this->user->com)
+				$this->get_comments();
+			$storeuser=serialize($this->user);
+			$_SESSION["User"]=$storeuser;
 			$this->load->view('choose');
+		}
 		else
 			$this->load->view('weibo_list',$data);
 	}
-	function show()
-	{
-		$this->user=unserialize($_SESSION["User"]);
-		$ms=$this->user->ms;
-		for($i=0;$i<count($ms);$i++) 
-		{ 
-			if($ms[$i]->used) 
-			{
-				echo $ms[$i]->text."\n" ; 
-			}
-		} 
-	}
-	function getfriends()
-	{
-		$c = new SaeTClientV2( WB_AKEY , WB_SKEY , $_SESSION['token']['access_token'] );
-		$uid_get = $c->get_uid();
-		$uid = $uid_get['uid'];
-		$data['friends']=$c->friends_by_id($uid);
-		$this->load->view('friends',$data);
-		
-	}
+
 	function downloads($name){
-	
-		
-		if (!file_exists($name)){
+
+        $s = new SaeStorage();
+        $domain="stmyvbook";
+        //  $url=$s->getUrl($domain,$name);
+        //echo $url;
+        //die();
+       
+		if (!$s->fileExists($domain,$name)){
 			header("Content-type: text/html; charset=utf-8");
 			echo "File not found!";
 			exit; 
 		} else {
-			$file = fopen($file_dir.$name,"r"); 
-			Header("Content-type: application/octet-stream");
-			Header("Accept-Ranges: bytes");
-			Header("Accept-Length: ".filesize($file_dir . $name));
-			Header("Content-Disposition: attachment; filename=".$name);
-			echo fread($file, filesize($file_dir.$name));
-			fclose($file);
+            $attr = $s->getAttr($domain, $name);
+            ob_clean();
+            header("Content-Type: application/octet-stream");
+           	header("Content-Disposition:  attachment; filename=\"".$name."\"");
+	 		header("Content-Transfer-Encoding: binary");
+	 		header("Content-Length:  ". $attr["Length"]);
+            //ob_clean();
+		    echo $s->read($domain, $name);
+            // ob_end_flush();
+            exit;
 		}
+		$data['name']=$name;
+        $this->load->view('download',$data);
+      
+        //$stor->delete($domain, $name);
 	}
+    function settittle()
+    {
+		
+		$mod = 3;
+		$pic = 9;
+		if(isset($_POST['model']))
+			$mod=$_POST['model'];
+		if(isset($_POST['back']))
+			$pic=$_POST['back'];
+		$pic = $pic -4;
+		unset($_POST['checkbox']);
+        $_SESSION["Mod"]=$mod;
+        $_SESSION["Pic"]=$pic;
+        $this->load->view('tbset');
+        	
+    }
 	function convertopdf()
 	{
-		if(isset($_POST['checkbox']))
-			$checkbox = $_POST['checkbox']; 
-		else
-			$checkbos = array();
-			//$chechvalue="";
-		$mod = 2;
-		$pic = 8;
-		for($i=0;$i<count($checkbox);$i++) 
-		{ 
-			if(!is_null($checkbox[$i])) 
-			{
-				if($checkbox[$i]<3&&$checkbox[$i]<$mod)
-					$mod = $checkbox[$i];
-				if($checkbox[$i]>2&&$checkbox[$i]<$pic)
-					$pic = $checkbox[$i];
-			}
-		} 
-		$pic = $pic -3;
-		unset($_POST['checkbox']);
-		$c = new SaeTClientV2( WB_AKEY , WB_SKEY , $_SESSION['token']['access_token'] );
+        $cat=0;
+        $tit="myvbook";
+        $mod = 3;
+		$pic = 9;
+		if(isset($_POST['model']))
+			$mod=$_POST['model'];
+		if(isset($_POST['back']))
+			$pic=$_POST['back'];
+		$pic = $pic -4;
+        if(isset($_POST['catalog']))
+			$cat=$_POST['catalog'];
+        if(isset($_POST['tittle']))
+			$tit=$_POST['tittle'];
 		$this->load->model('vmodel');
 		$this->user=unserialize($_SESSION["User"]);
+        if($tit=="")
+            $tit="myvbook";
+        //foreach($this->user->ms as $item)
+            //	print_r($item->ttime);
+        //		die();
+        $this->vmodel->uname=$this->user->screenname;
+        $this->cat=$cat;
+        $this->vmodel->tittle=$tit;
 		$ms=$this->user->ms;
 		$this->vmodel->con($mod,$pic,$ms,$this->user->uid);
 		$data['name']=$this->user->uid.'_'.$mod.'.pdf';
-		$data['c']=$c;
 		$this->load->view('download',$data);
 		
 	}
