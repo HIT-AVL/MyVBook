@@ -2,28 +2,28 @@
 class vmodel extends CI_Model{
 	var $tittle;
 	var $uname;
-    var $curp;
-    var $curi;
+    var $cct;
 	var $catalog=array();
 	function con($i,$pic,$ms,$uid)
 	{
 		//echo $i;
 		//echo $pic;
-		$pics=array("tupian/jingdian.jpg","tupian/blue.jpg","tupian/green.jpg","tupian/jiangshan.jpg","tupian/zhuyin.jpg","tupian/gucun.jpg");
+		$pics=array("tupian/yangpi.jpg","tupian/dongri.jpg","tupian/lanse.jpg","tupian/lvse.jpg","tupian/shuidi.jpg","tupian/qianse.jpg");
 		if($i == 0)
-			$this->convertopdf(APPPATH.$pics[$pic],$ms,$uid);
+            $this->convertopdf("http://myvbook.sinaapp.com/mytest/".$pics[$pic],$ms,$uid);
 		else if($i == 1)
-			$this->convertopdf1(APPPATH.$pics[$pic],$ms,$uid);
+			$this->convertopdf1("http://myvbook.sinaapp.com/mytest/".$pics[$pic],$ms,$uid);
 		else if($i == 2)
-			$this->convertopdf2(APPPATH.$pics[$pic],$ms,$uid);
+			$this->convertopdf2("http://myvbook.sinaapp.com/mytest/".$pics[$pic],$ms,$uid);
 		else if($i == 3)
-			$this->convertopdf3(APPPATH.$pics[$pic],$ms,$uid);
+			$this->convertopdf3("http://myvbook.sinaapp.com/mytest/".$pics[$pic],$ms,$uid);
 			
 	}
 	function convertopdf($back,$ms,$uid)
 	{
 		require_once(APPPATH.'/libraries/tcpdf/config/lang/chi.php');
 		require_once(APPPATH.'/libraries/tcpdf/tcpdf.php');
+        try{
 		$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 		$pdf->SetCreator(PDF_CREATOR);
 		$pdf->SetAuthor('Nicola Asuni');
@@ -111,7 +111,7 @@ EOF;
 			if($ifpage)
 			{
 				$pdf->AddPage();
-				$pdf->SetFooterMargin(5);
+				$pdf->SetFooterMargin(6);
 				$pdf->SetTextColor(0, 63, 127);
 				$pdf->Image($back,0,0,210,298);
                 $pdf->writeHTML($html, true, false, true, false, '');
@@ -119,12 +119,13 @@ EOF;
             //fwrite($fin,$html);
             //fclose($fin);
 		}
-        
-         $cat=$this->getcat();
-    	 $llt=count($cat);
-        $st=2;
-        for($i=0;$i<$llt;)
+        if($this->cct>0)
         {
+         	$cat=$this->getcat();
+    	 	$llt=count($cat);
+        	$st=2;
+        	for($i=0;$i<$llt;)
+       	 	{
                 $html= 
 <<<EOF
 <html>
@@ -151,6 +152,7 @@ EOF;
             $pdf->movePage($pi+2, $st);
             $st++;
             $pi++;
+        	}
         }
         //  print_r($cat);
         // die();
@@ -162,6 +164,11 @@ EOF;
 		$mypdf=$pdf->Output($uid.'_0.pdf', 'S');
         $s = new SaeStorage();
         $s->write('stmyvbook',$uid.'_0.pdf',$mypdf);
+        }
+        catch (Exception $e) {   
+			echo "不好意思,网速略卡，无法获取微博中的图片，请刷新浏览器尝试重新获取";   
+			exit();   
+		}   
 		
 		
 	}
@@ -259,7 +266,7 @@ $html.="</font></td></tr>
 		$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
 		$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 		$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
-		
+        try{
 		$pdf->SetHeaderMargin(0);
 		$pdf->SetFooterMargin(5);
 		$pdf->SetAutoPageBreak(FALSE, PDF_MARGIN_BOTTOM);
@@ -358,13 +365,15 @@ EOF;
 			$html.='</body>';
 			$html.='</html>';
 			$pdf->AddPage();
-			$pdf->SetFooterMargin(5);
+			$pdf->SetFooterMargin(6);
 			$pdf->SetTextColor(0, 63, 127);
 			$pdf->Image($back,0,0,210,298);
             $pdf->writeHTML($html, true, false, true, false, '');
             //fwrite($fin,$html);
             //fclose($fin);
 		}
+        if($this->cct>0)
+        {
          $cat=$this->getcat();
     	 $llt=count($cat);
         $st=2;
@@ -397,11 +406,16 @@ EOF;
             $st++;
             $pi++;
         }
+        }
 		$pdf->lastPage();
 		$mypdf=$pdf->Output($uid.'_3.pdf', 'S');
         $s = new SaeStorage();
         $s->write('stmyvbook',$uid.'_3.pdf',$mypdf);
-
+        }
+		catch (Exception $e) {   
+			echo "不好意思,网速略卡，无法获取微博中的图片，请刷新浏览器尝试重新获取";   
+			exit();   
+		}   
 		
 		
 	}
@@ -410,6 +424,7 @@ EOF;
 		require_once(APPPATH.'/libraries/tcpdf/config/lang/chi.php');
 		require_once(APPPATH.'/libraries/tcpdf/tcpdf.php');
 		$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+        try{
 		$pdf->SetCreator(PDF_CREATOR);
 		$pdf->SetAuthor('Nicola Asuni');
 		$pdf->SetTitle('中文');
@@ -499,6 +514,7 @@ EOF;
 			$html.='</body>';
 			$html.='</html>';
             $pi++;
+            $pdf->SetFooterMargin(6);
 			$pdf->AddPage();
 			$pdf->SetTextColor(0, 63, 127);
 			$pdf->Image($back,0,0,210,298);
@@ -506,6 +522,8 @@ EOF;
             //fwrite($fin,$html);
             //fclose($fin);
 		}
+        if($this->cct>0)
+        {
         $cat=$this->getcat();
     	 $llt=count($cat);
         $st=2;
@@ -538,11 +556,16 @@ EOF;
             $st++;
             $pi++;
         }
+        }
 		$pdf->lastPage();
 		$mypdf=$pdf->Output($uid.'_1.pdf', 'S');
         $s = new SaeStorage();
         $s->write('stmyvbook',$uid.'_1.pdf',$mypdf);
-
+        }
+        catch (Exception $e) {   
+			echo "不好意思,网速略卡，无法获取微博中的图片，请刷新浏览器尝试重新获取";   
+			exit();   
+		}   
 		//$data['name']=$this->user->uid.'.pdf';
 		//$this->load->view('download',$data);
 		
@@ -551,6 +574,7 @@ EOF;
 	{
 		require_once(APPPATH.'/libraries/tcpdf/config/lang/chi.php');
 		require_once(APPPATH.'/libraries/tcpdf/tcpdf.php');
+        try{
 		$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 		$pdf->SetCreator(PDF_CREATOR);
 		$pdf->SetAuthor('Nicola Asuni');
@@ -650,12 +674,15 @@ EOF;
 			$html.='</html>';
 			$pdf->AddPage();
             $pi++;
+            $pdf->SetFooterMargin(6);
 			$pdf->SetTextColor(0, 63, 127);
 			$pdf->Image($back,0,0,210,298);
 			$pdf->writeHTML($html, true, false, true, false, '');
             //fwrite($fin,$html);
             //fclose($fin);
 		}
+        if($this->cct>0)
+        {
         $cat=$this->getcat();
     	 $llt=count($cat);
         $st=2;
@@ -688,10 +715,16 @@ EOF;
             $st++;
             $pi++;
         }
+        }
 		$pdf->lastPage();
 		$mypdf=$pdf->Output($uid.'_2.pdf', 'S');
         $s = new SaeStorage();
         $s->write('stmyvbook',$uid.'_2.pdf',$mypdf);
+        }
+        catch (Exception $e) {   
+			echo "不好意思,网速略卡，无法获取微博中的图片，请刷新浏览器尝试重新获取";   
+			exit();   
+		}   
 		//$data['name']=$this->user->uid.'.pdf';
 		//$this->load->view('download',$data);
 	}

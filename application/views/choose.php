@@ -37,34 +37,34 @@ body {
     <td height="80" colspan="4" style="text-align: center"><img src="http://myvbook.sinaapp.com/mytest/choose2.png" width="153" height="58"  alt=""/></td>
   </tr>
   <tr>
-    <td height="205" colspan="2"><div align="center"><img src="http://myvbook.sinaapp.com/mytest/tupian/jingdian.jpg" height="205"  alt=""/></div></td>
-    <td><div align="center"><img src="http://myvbook.sinaapp.com/mytest/tupian/blue.jpg" height="205"  alt=""/></div></td>
-    <td><div align="center"><img src="http://myvbook.sinaapp.com/mytest/tupian/green.jpg" height="205"  alt=""/></div></td>
+    <td height="205" colspan="2"><div align="center"><img src="http://myvbook.sinaapp.com/mytest/tupian/yangpi.jpg" height="205"  alt=""/></div></td>
+    <td><div align="center"><img src="http://myvbook.sinaapp.com/mytest/tupian/dongri.jpg" height="205"  alt=""/></div></td>
+    <td><div align="center"><img src="http://myvbook.sinaapp.com/mytest/tupian/lanse.jpg" height="205"  alt=""/></div></td>
   </tr>
   <tr>
     <td height="30" colspan="2"><div align="center"> <strong>
     <input type="radio" name="back" id="radio5" value="4">羊皮经典</strong></div></td>
     <td height="30"><div align="center"> <strong>
-        <input type="radio" name="back" id="radio6" value="5">蓝色梦幻 </strong></div></td>
+        <input type="radio" name="back" id="radio6" value="5">冬日飘雪 </strong></div></td>
     <td height="30"><div align="center"> <strong>
     <input type="radio" name="back" id="radio7" value="6">
-    绿色清新 </strong></div></td>
+    蓝色梦幻 </strong></div></td>
   </tr>
   <tr>
-    <td height="205" colspan="2"><div align="center"><img src="http://myvbook.sinaapp.com/mytest/tupian/jiangshan.jpg" height="205"  alt=""/></div></td>
-    <td><div align="center"><img src="http://myvbook.sinaapp.com/mytest/tupian/zhuyin.jpg" height="205"  alt=""/></div></td>
-    <td><div align="center"><img src="http://myvbook.sinaapp.com/mytest/tupian/gucun.jpg" height="205"  alt=""/></div></td>
+    <td height="205" colspan="2"><div align="center"><img src="http://myvbook.sinaapp.com/mytest/tupian/lvse.jpg" height="205"  alt=""/></div></td>
+    <td><div align="center"><img src="http://myvbook.sinaapp.com/mytest/tupian/shuidi.jpg" height="205"  alt=""/></div></td>
+    <td><div align="center"><img src="http://myvbook.sinaapp.com/mytest/tupian/qianse.jpg" height="205"  alt=""/></div></td>
   </tr>
   <tr>
     <td height="30" colspan="2"><div align="center"> <strong>
     <input type="radio" name="back" id="7" value="7">
-    江山如画 </strong></div></td>
+    绿色清新 </strong></div></td>
     <td height="30"><div align="center"> <strong>
     <input type="radio" name="back" id="8" value="8">
-    竹影摇曳 </strong></div></td>
+    记忆水滴 </strong></div></td>
     <td height="30"><div align="center"> <strong>
     <input type="radio" name="back" id="9" value="9">
-    孤村独桥 </strong></div></td>
+    泛黄信纸 </strong></div></td>
   </tr>
   <tr>
       <th colspan = "3">请输入微博书的标题<br><input type="text" name="tittle" style="width:300px" /></th>
@@ -73,7 +73,8 @@ body {
   </tr>
   <tr>
     <td height="30" colspan="4"><div align="center">
-      <input type="submit" name="submit" id="submit" value="提交">
+      <input type="submit" name="submit" id="submit" value="生成微博书">
+      <input type="submit" name="next" value="预览" onclick="javascript:this.form.action='http://myvbook.sinaapp.com/mytest/index.php/weibo/preshow';this.form.submit()" /> 
     </div></td>
   </tr>
 </table>

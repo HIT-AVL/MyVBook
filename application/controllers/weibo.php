@@ -184,6 +184,54 @@ class Weibo extends CI_Controller {
         $this->load->view('tbset');
         	
     }
+    function preshow()
+    {
+        $cat=0;
+        $tit="myvbook";
+        $mod = 3;
+		$pic = 9;
+        $this->user=unserialize($_SESSION["User"]);
+		if(isset($_POST['model']))
+			$mod=$_POST['model'];
+		if(isset($_POST['back']))
+			$pic=$_POST['back'];
+		$pic = $pic -4;
+        if(isset($_POST['catalog']))
+			$cat=$_POST['catalog'];
+        if(isset($_POST['tittle']))
+			$tit=$_POST['tittle'];
+        $_SESSION["Mod"]=$mod;
+        $_SESSION["Pic"]=$pic;
+        $_SESSION["Cat"]=$cat;
+        $_SESSION["Tit"]=$tit;
+        $pics=array("tupian/yangpi.jpg","tupian/dongri.jpg","tupian/lanse.jpg","tupian/lvse.jpg","tupian/shuidi.jpg","tupian/qianse.jpg");
+        $data['pic']="http://myvbook.sinaapp.com/mytest/".$pics[$pic];
+        $data['ms']=$this->user->ms;
+        $data['len']=count($this->user->ms);
+        $name='preshow'.$mod;
+        $this->load->view($name,$data);
+    }
+    function makebook()
+    {
+        $mod=$_SESSION["Mod"];
+        $pic=$_SESSION["Pic"];
+        $cat=$_SESSION["Cat"];
+        $tit=$_SESSION["Tit"];
+        $this->load->model('vmodel');
+		$this->user=unserialize($_SESSION["User"]);
+        if($tit=="")
+            $tit="myvbook";
+        //foreach($this->user->ms as $item)
+            //	print_r($item->ttime);
+        //		die();
+        $this->vmodel->uname=$this->user->screenname;
+        $this->vmodel->cct=$cat;
+        $this->vmodel->tittle=$tit;
+		$ms=$this->user->ms;
+		$this->vmodel->con($mod,$pic,$ms,$this->user->uid);
+		$data['name']=$this->user->uid.'_'.$mod.'.pdf';
+		$this->load->view('download',$data);
+    }
 	function convertopdf()
 	{
         $cat=0;
@@ -207,7 +255,7 @@ class Weibo extends CI_Controller {
             //	print_r($item->ttime);
         //		die();
         $this->vmodel->uname=$this->user->screenname;
-        $this->cat=$cat;
+        $this->vmodel->cct=$cat;
         $this->vmodel->tittle=$tit;
 		$ms=$this->user->ms;
 		$this->vmodel->con($mod,$pic,$ms,$this->user->uid);
