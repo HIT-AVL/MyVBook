@@ -36,7 +36,7 @@ class Weibo extends CI_Controller {
 		setcookie( 'weibojs_'.$o->client_id, http_build_query($token) );}
 		$data['flag']=TRUE;
 		}
-		$this->load->view('vbookset',$data);
+		$this->load->view('nvbookset',$data);
 		
 	}
 
@@ -133,7 +133,7 @@ class Weibo extends CI_Controller {
 				$this->get_comments();
 			$storeuser=serialize($this->user);
 			$_SESSION["User"]=$storeuser;
-			$this->load->view('choose');
+			$this->load->view('nchoose');
 		}
 		else
 			$this->load->view('weibo_list',$data);
@@ -164,7 +164,7 @@ class Weibo extends CI_Controller {
             exit;
 		}
 		$data['name']=$name;
-        $this->load->view('download',$data);
+        $this->load->view('ndownload',$data);
       
         //$stor->delete($domain, $name);
 	}
@@ -230,7 +230,7 @@ class Weibo extends CI_Controller {
 		$ms=$this->user->ms;
 		$this->vmodel->con($mod,$pic,$ms,$this->user->uid);
 		$data['name']=$this->user->uid.'_'.$mod.'.pdf';
-		$this->load->view('download',$data);
+		$this->load->view('ndownload',$data);
     }
 	function convertopdf()
 	{
@@ -260,7 +260,7 @@ class Weibo extends CI_Controller {
 		$ms=$this->user->ms;
 		$this->vmodel->con($mod,$pic,$ms,$this->user->uid);
 		$data['name']=$this->user->uid.'_'.$mod.'.pdf';
-		$this->load->view('download',$data);
+		$this->load->view('ndownload',$data);
 		
 	}
 	
